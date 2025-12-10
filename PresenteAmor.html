@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para o Meu Amor</title>
+    <!-- Tailwind CSS para estilização rápida e moderna -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Ícones Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Confetti para o final -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Fonte bonita do Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+        }
+
+        /* Simulação do iPhone 15 Pro */
+        .iphone-frame {
+            width: 380px;
+            height: 780px;
+            background: #000;
+            border-radius: 55px;
+            position: relative;
+            box-shadow: 
+                0 0 0 12px #444, /* Borda de metal */
+                0 0 0 13px #000, /* Linha fina preta */
+                20px 20px 50px rgba(0,0,0,0.5); /* Sombra 3D */
+            overflow: hidden;
+            transition: transform 0.5s ease;
+            z-index: 10;
+        }
+
+        /* Dynamic Island */
+        .dynamic-island {
+            width: 120px;
+            height: 35px;
+            background: #000;
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 20px;
+            z-index: 50;
+            transition: all 0.3s ease;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 48px;
+            overflow: hidden;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Utilitários de Animação */
+        .fade-in { animation: fadeIn 0.8s ease-in forwards; opacity: 0; }
+        .slide-up { animation: slideUp 0.8s ease-out forwards; opacity: 0; transform: translateY(20px); }
+        .heart-beat { animation: heartBeat 1.5s infinite; }
+        
+        @keyframes fadeIn { to { opacity: 1; } }
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.3); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.3); }
+            70% { transform: scale(1); }
+        }
+
+        /* Estilos específicos das telas */
+        .lock-screen-bg {
+            background: url('https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?q=80&w=1000&auto=format&fit=crop') center/cover no-repeat;
+            position: absolute; inset: 0; filter: brightness(0.85);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+        }
+
+        .scroll-hidden::-webkit-scrollbar { display: none; }
+        .scroll-hidden { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .photo-card {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .photo-card:hover { transform: scale(1.02) rotate(-1deg); }
+
+        .handwritten {
+            font-family: 'Dancing Script', cursive;
+        }
+
+        /* Partículas de coração flutuantes no fundo da página web (fora do telefone) */
+        .floating-heart {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.6);
+            animation: floatUp 10s linear infinite;
+            z-index: 1;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Corações Flutuantes no Background -->
+    <div id="bg-hearts"></div>
+
+    <!-- O iPhone -->
+    <div class="iphone-frame ring-offset-2">
+        <!-- Dynamic Island -->
+        <div class="dynamic-island flex items-center justify-between px-3" id="island">
+            <div class="w-2 h-2 rounded-full bg-red-500 hidden" id="rec-dot"></div>
+        </div>
+
+        <!-- Conteúdo da Tela -->
+        <div class="screen relative" id="main-screen">
+            
+            <!-- TELA 1: LOCK SCREEN -->
+            <div id="lock-screen" class="absolute inset-0 z-40 flex flex-col items-center justify-between py-16 text-white transition-all duration-700">
+                <div class="lock-screen-bg transition-transform duration-1000"></div>
+                
+                <div class="relative z-10 flex flex-col items-center mt-8">
+                    <i data-lucide="lock" class="w-5 h-5 mb-4 opacity-70"></i>
+                    <div class="text-7xl font-light tracking-tight" id="clock">12:00</div>
+                    <div class="text-lg font-medium opacity-90 mt-2" id="date">Quarta, 10 de Dezembro</div>
+                </div>
+
+                <!-- Notificação -->
+                <div class="relative z-10 w-[90%] glass-panel p-4 slide-up" style="animation-delay: 0.5s">
+                    <div class="flex items-start gap-3">
+                        <div class="bg-white p-1.5 rounded-lg">
+                            <i data-lucide="message-circle-heart" class="w-6 h-6 text-pink-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-sm">Amor da Minha Vida</h3>
+                            <p class="text-xs opacity-90 mt-1">Tenho uma surpresa para você. Clique para abrir ❤️</p>
+                        </div>
+                        <span class="text-[10px] opacity-60 ml-auto">Agora</span>
+                    </div>
+                </div>
+
+                <div class="relative z-10 w-full px-8 mb-4">
+                    <button onclick="unlockPhone()" class="w-full glass-panel h-14 rounded-full flex items-center justify-between px-1.5 group cursor-pointer hover:bg-white/30 transition-colors">
+                        <div class="h-11 w-11 bg-white rounded-full flex items-center justify-center shadow-lg group-hover:translate-x-[260px] transition-transform duration-500 ease-in-out">
+                            <i data-lucide="chevron-right" class="text-gray-800"></i>
+                        </div>
+                        <span class="text-sm font-medium tracking-widest uppercase opacity-80 mr-auto ml-4 animate-pulse">Clique para abrir</span>
+                    </button>
+                    <!-- Home Bar -->
+                    <div class="w-32 h-1.5 bg-white rounded-full mx-auto mt-8 opacity-70"></div>
+                </div>
+            </div>
+
+            <!-- TELA 2: HOME / GALERIA -->
+            <!-- CORREÇÃO: overflow-hidden no container principal para manter a Tab Bar fixa -->
+            <div id="app-screen" class="absolute inset-0 bg-gray-50 z-30 opacity-0 pointer-events-none transition-opacity duration-700 overflow-hidden">
+                
+                <!-- CONTAINER DE ROLAGEM INDEPENDENTE -->
+                <div class="h-full w-full overflow-y-auto scroll-hidden relative">
+                    
+                    <!-- Cabeçalho do App (Sticky dentro do container de rolagem) -->
+                    <div class="sticky top-0 bg-white/80 backdrop-blur-md z-20 px-6 pt-14 pb-4 border-b border-gray-100">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-xs text-pink-500 font-bold tracking-widest uppercase">Nossa História</p>
+                                <h1 class="text-2xl font-bold text-gray-800">Melhores Momentos</h1>
+                            </div>
+                            <div class="h-10 w-10 bg-pink-100 rounded-full flex items-center justify-center">
+                                <i data-lucide="heart" class="text-pink-500 w-5 h-5 fill-current"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Conteúdo do Feed -->
+                    <!-- Adicionado padding bottom extra (pb-32) para garantir que o conteúdo não fique escondido atrás da Tab Bar -->
+                    <div class="p-6 pb-32 space-y-8">
+                        
+                        <!-- FOTO 1: Destaque -->
+                        <div class="photo-card bg-white p-3 rounded-3xl shadow-xl shadow-pink-100/50 rotate-1">
+                            <!-- SUBSTITUA O SRC PELA FOTO DE VOCÊS -->
+                            <div class="h-64 rounded-2xl bg-gray-200 overflow-hidden relative group">
+                                <img src="1.jpeg" class="w-full h-full object-cover" alt="Nós dois">
+                                <div class="absolute bottom-3 right-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-gray-700 shadow-sm">
+                                    O começo de tudo
+                                </div>
+                            </div>
+                            <div class="pt-4 px-2 pb-2">
+                                <p class="text-gray-600 text-sm leading-relaxed">Lembro desse dia como se fosse ontem(nem tanto kkkkk). Foi quando percebi que meu lugar favorito no mundo é ao seu lado.</p>
+                            </div>
+                        </div>
+
+                        <!-- SEÇÃO INTERATIVA: Motivos -->
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-800 mb-4">Por que eu te amo?</h2>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="revealReason(this, 'Sua implicância e carinho únicos ❤️')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-left hover:border-pink-300 transition-colors min-h-24 flex flex-col justify-between group">
+                                    <span class="bg-orange-100 w-8 h-8 rounded-full flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
+                                        <i data-lucide="sun" class="w-4 h-4"></i>
+                                    </span>
+                                    <span class="text-sm font-semibold text-gray-400 group-hover:text-gray-600">Toque aqui</span>
+                                </button>
+
+                                <button onclick="revealReason(this, 'Seu abraço é meu porto seguro 🏠')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-left hover:border-pink-300 transition-colors min-h-24 flex flex-col justify-between group">
+                                    <span class="bg-purple-100 w-8 h-8 rounded-full flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
+                                        <i data-lucide="home" class="w-4 h-4"></i>
+                                    </span>
+                                    <span class="text-sm font-semibold text-gray-400 group-hover:text-gray-600">Toque aqui</span>
+                                </button>
+                                
+                                <button onclick="revealReason(this, 'Você me faz uma pessoa melhor ✨')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-left hover:border-pink-300 transition-colors min-h-24 flex flex-col justify-between group col-span-2">
+                                    <span class="bg-blue-100 w-8 h-8 rounded-full flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                    </span>
+                                    <span class="text-sm font-semibold text-gray-400 group-hover:text-gray-600">Toque aqui (O motivo principal)</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- FOTO 2: Viagem/Momento -->
+                        <div class="photo-card bg-white p-3 rounded-3xl shadow-xl shadow-pink-100/50 -rotate-1">
+                             <!-- SUBSTITUA O SRC PELA FOTO DE VOCÊS -->
+                            <div class="h-56 rounded-2xl bg-gray-200 overflow-hidden relative">
+                                <img src="2.jpeg" class="w-full h-full object-cover" alt="Viagem">
+                            </div>
+                            <div class="pt-4 px-2 pb-2">
+                                <p class="text-gray-600 text-sm leading-relaxed">Cada aventura com você é uma página nova no meu livro favorito.</p>
+                            </div>
+                        </div>
+
+                        <!-- Botão Final -->
+                        <button onclick="showFinalLetter()" class="w-full py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl shadow-lg shadow-pink-500/30 font-semibold transform active:scale-95 transition-all mb-8">
+                            Ler Carta Especial 💌
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Simulação de Tab Bar iOS (Agora FORA do scroll container, fixa na base) -->
+                <div class="absolute bottom-0 w-full bg-white/90 backdrop-blur border-t border-gray-200 py-4 px-8 flex justify-between items-center z-50 pb-8">
+                    <i data-lucide="grid" class="w-6 h-6 text-gray-400 cursor-pointer hover:text-pink-500 transition-colors"></i>
+                    <div class="w-12 h-12 bg-black rounded-full flex items-center justify-center -mt-8 shadow-lg shadow-pink-200 cursor-pointer transform hover:scale-105 transition-transform">
+                        <i data-lucide="plus" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <i data-lucide="user" class="w-6 h-6 text-gray-400 cursor-pointer hover:text-pink-500 transition-colors"></i>
+                </div>
+            </div>
+
+            <!-- TELA 3: CARTA FINAL (Overlay) -->
+            <div id="letter-screen" class="absolute inset-0 bg-gray-900 z-50 opacity-0 pointer-events-none transition-opacity duration-1000 flex flex-col items-center justify-center p-8 text-center">
+                <div class="handwritten text-3xl text-pink-300 mb-6 slide-up">Para meu amor...</div>
+                
+                <div class="text-gray-200 text-lg leading-relaxed font-light h-64 overflow-hidden relative">
+                    <p id="typewriter-text"></p>
+                    <span class="animate-pulse text-pink-500">|</span>
+                </div>
+
+                <div id="replay-btn" class="mt-8 opacity-0 transition-opacity duration-1000">
+                    <button onclick="location.reload()" class="px-6 py-2 rounded-full border border-gray-700 text-gray-400 text-sm hover:bg-gray-800 transition-colors">
+                        Ver de novo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicializar ícones
+        lucide.createIcons();
+
+        // Configurar Relógio
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}`;
+            
+            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            const dateStr = now.toLocaleDateString('pt-BR', options);
+            // Capitalizar primeira letra
+            document.getElementById('date').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Efeito de fundo (Corações)
+        function createFloatingHearts() {
+            const container = document.getElementById('bg-hearts');
+            const colors = ['#ff9a9e', '#ffc3a0', '#ffffff'];
+            
+            for(let i=0; i<15; i++) {
+                const heart = document.createElement('div');
+                heart.innerHTML = '❤';
+                heart.className = 'floating-heart';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.fontSize = (Math.random() * 20 + 10) + 'px';
+                heart.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                heart.style.animationDelay = (Math.random() * 5) + 's';
+                heart.style.color = colors[Math.floor(Math.random() * colors.length)];
+                container.appendChild(heart);
+            }
+        }
+        createFloatingHearts();
+
+        // 1. Desbloquear o telefone
+        function unlockPhone() {
+            const lockScreen = document.getElementById('lock-screen');
+            const appScreen = document.getElementById('app-screen');
+            const island = document.getElementById('island');
+
+            // Animação de deslize para cima
+            lockScreen.style.transform = 'translateY(-100%)';
+            lockScreen.style.opacity = '0';
+            
+            // Expandir Dynamic Island levemente
+            island.style.width = '140px';
+            setTimeout(() => island.style.width = '120px', 300);
+
+            // Mostrar App
+            setTimeout(() => {
+                appScreen.style.opacity = '1';
+                appScreen.style.pointerEvents = 'auto';
+                lockScreen.style.display = 'none';
+            }, 300);
+        }
+
+        // 2. Revelar motivos (Interatividade)
+        function revealReason(element, text) {
+            // Animação do elemento
+            element.style.transform = 'scale(0.95)';
+            setTimeout(() => element.style.transform = 'scale(1)', 150);
+
+            // Mudar conteúdo
+            const textSpan = element.querySelector('span:last-child');
+            textSpan.textContent = text;
+            textSpan.className = 'text-sm font-bold text-gray-800 fade-in';
+            
+            element.classList.remove('bg-white');
+            element.classList.add('bg-pink-50', 'border-pink-200');
+
+            // Disparar um pouco de confetti localizado (opcional, mas legal)
+            confetti({
+                particleCount: 15,
+                spread: 50,
+                origin: { 
+                    x: element.getBoundingClientRect().left / window.innerWidth, 
+                    y: element.getBoundingClientRect().top / window.innerHeight 
+                },
+                colors: ['#ec4899', '#f472b6']
+            });
+        }
+
+        // 3. Carta Final e Efeito de Digitação
+        function showFinalLetter() {
+            const appScreen = document.getElementById('app-screen');
+            const letterScreen = document.getElementById('letter-screen');
+            
+            appScreen.style.opacity = '0';
+            appScreen.style.transform = 'scale(0.9)';
+            
+            setTimeout(() => {
+                appScreen.style.display = 'none';
+                letterScreen.style.opacity = '1';
+                letterScreen.style.pointerEvents = 'auto';
+                
+                // Iniciar digitação após transição
+                setTimeout(startTypewriter, 1000);
+            }, 500);
+        }
+
+        function startTypewriter() {
+            const text = "Você é a pessoa mais incrível que já conheci. Obrigado por cada sorriso, cada abraço e por ser exatamente quem você é. Meu mundo é mais colorido com você. Eu te amo mais do que as palavras podem dizer. ❤️";
+            const element = document.getElementById('typewriter-text');
+            let i = 0;
+
+            function type() {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, 50); // Velocidade da digitação
+                } else {
+                    // Fim da digitação: Explosão de Confetti
+                    fireConfetti();
+                    document.getElementById('replay-btn').style.opacity = '1';
+                }
+            }
+            type();
+        }
+
+        function fireConfetti() {
+            const duration = 3000;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#ff69b4', '#ff1493', '#ffffff']
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#ff69b4', '#ff1493', '#ffffff']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+
+    </script>
+</body>
+</html>
